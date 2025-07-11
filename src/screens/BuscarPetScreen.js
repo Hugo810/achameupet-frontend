@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, Image, ActivityIndicator, TouchableOpacity, StyleSheet } from 'react-native';
 import * as Location from 'expo-location';
 import api from '../services/api';
+import { auth } from '../services/firebaseConfig'; // Importando o Firebase
 
 export default function BuscarPetScreen({ navigation }) {
   const [animais, setAnimais] = useState([]);
@@ -24,11 +25,26 @@ export default function BuscarPetScreen({ navigation }) {
       const localizacao = await Location.getCurrentPositionAsync({});
       const { latitude, longitude } = localizacao.coords;
 
-      const res = await api.get(`/animais/proximos`, {
+      // Obtendo o token JWT do Firebase
+      const token = await auth.currentUser.getIdToken(true);
+      console.log("Token JWT obtido:", token); // Verifique se o token está sendo obtido corretamente
+
+      // Fazendo a requisição com o token no cabeçalho
+      const res = await api.get('/animais/proximos', {
+        headers: {
+          Authorization: `Bearer ${token}`, // Enviando o token JWT no cabeçalho Authorization
+        },
         params: { latitude, longitude }
       });
 
-      setAnimais(res.data.data);
+      // Verifique a resposta recebida
+      console.log("Resposta recebida:", res.data); 
+
+      if (res.data.success) {
+        setAnimais(res.data.data || []);
+      } else {
+        setErro('Erro ao buscar animais');
+      }
     } catch (err) {
       console.error('Erro ao buscar animais:', err);
       setErro('Erro ao buscar animais');
@@ -38,32 +54,52 @@ export default function BuscarPetScreen({ navigation }) {
   };
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity style={styles.card}>
-      <Image source={{ uri: item.fotos[0] }} style={styles.foto} />
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => navigation.navigate('DetalhesPet', { petId: item.id })}
+    >
+      <Image
+        source={{ uri: item.fotos && item.fotos.length > 0 ? item.fotos[0] : 'https://via.placeholder.com/100' }}
+        style={styles.foto}
+      />
       <View style={styles.info}>
         <Text style={styles.nome}>{item.nome || 'Animal sem nome'}</Text>
-        <Text style={styles.detalhes}>{item.raca} • {item.cor}</Text>
-        <Text style={styles.distancia}>Distância: {item.distancia} km</Text>
+        <Text style={styles.detalhes}>{[item.raca, item.cor].filter(Boolean).join(' • ')}</Text>
+        <Text style={styles.distancia}>
+          {item.distancia ? `Distância: ${parseFloat(item.distancia).toFixed(1)} km` : ''}
+        </Text>
       </View>
     </TouchableOpacity>
   );
 
   if (carregando) {
-    return <ActivityIndicator size="large" color="#3498db" style={{ marginTop: 50 }} />;
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#3498db" />
+      </View>
+    );
   }
 
   if (erro) {
-    return <Text style={{ color: 'red', padding: 20 }}>{erro}</Text>;
+    return (
+      <View style={styles.center}>
+        <Text style={styles.erroTexto}>{erro}</Text>
+      </View>
+    );
   }
 
   if (animais.length === 0) {
-    return <Text style={{ padding: 20 }}>Nenhum pet encontrado por perto.</Text>;
+    return (
+      <View style={styles.center}>
+        <Text style={styles.semResultados}>Nenhum pet encontrado por perto.</Text>
+      </View>
+    );
   }
 
   return (
     <FlatList
       data={animais}
-      keyExtractor={item => item.id}
+      keyExtractor={(item) => item.id}
       renderItem={renderItem}
       contentContainerStyle={styles.lista}
     />
@@ -71,7 +107,9 @@ export default function BuscarPetScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  lista: { padding: 20 },
+  lista: {
+    padding: 20
+  },
   card: {
     flexDirection: 'row',
     backgroundColor: '#fff',
@@ -82,7 +120,8 @@ const styles = StyleSheet.create({
   },
   foto: {
     width: 100,
-    height: 100
+    height: 100,
+    backgroundColor: '#eee'
   },
   info: {
     padding: 10,
@@ -99,5 +138,19 @@ const styles = StyleSheet.create({
   distancia: {
     color: '#2980b9',
     fontWeight: '600'
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20
+  },
+  erroTexto: {
+    color: 'red',
+    textAlign: 'center'
+  },
+  semResultados: {
+    textAlign: 'center',
+    color: '#555'
   }
 });
