@@ -4,6 +4,7 @@ import CadastroScreen from '../screens/CadastroScreen';
 import HomeScreen from '../screens/HomeScreen';
 import BuscarPetScreen from '../screens/BuscarPetScreen';
 import CadastrarPetScreen from '../screens/CadastrarPetScreen';
+import MeusAnimaisScreen from '../screens/MeusAnimaisScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -15,6 +16,12 @@ export default function StackNavigator() {
       <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'AchaMeuPet' }} />
       <Stack.Screen name="BuscarPet" component={BuscarPetScreen} options={{ title: 'Buscar Pets Perdidos' }} />
       <Stack.Screen name="CadastrarPet" component={CadastrarPetScreen} options={{ title: 'Cadastrar Pet Perdido' }} />
+      <Stack.Screen name="MeusAnimais" component={MeusAnimaisScreen} />
     </Stack.Navigator>
   );
 }
+
+
+
+
+<Stack.Screen name="MeusAnimais" component={MeusAnimaisScreen} />

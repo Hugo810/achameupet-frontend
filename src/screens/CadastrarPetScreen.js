@@ -26,6 +26,12 @@ export default function CadastrarPetScreen({ navigation }) {
   const [loading, setLoading] = useState(false);
   const [locationError, setLocationError] = useState(null);
 
+  // Opções fixas
+  const tipos = ['Cachorro', 'Gato', 'Outro'];
+  const portes = ['Pequeno', 'Médio', 'Grande'];
+  const sexos = ['Macho', 'Fêmea'];
+  const statuses = ['Perdido', 'Encontrado'];
+
   useEffect(() => {
     (async () => {
       const [imagePerm, locationPerm] = await Promise.all([
@@ -68,7 +74,7 @@ export default function CadastrarPetScreen({ navigation }) {
         const newPhotos = result.assets.map((asset, index) => ({
           uri: asset.uri,
           name: asset.fileName || `photo_${Date.now()}_${index}.jpg`,
-          type: asset.type === 'image' ? asset.uri.endsWith('.png') ? 'image/png' : 'image/jpeg' : 'image/jpeg'
+          type: asset.uri.endsWith('.png') ? 'image/png' : 'image/jpeg'
         }));
 
         setFotos(prev => {
@@ -88,7 +94,6 @@ export default function CadastrarPetScreen({ navigation }) {
   const handleSubmit = async () => {
     if (loading) return;
 
-    // Validação básica dos campos obrigatórios
     if (!form.nome.trim() || !form.raca.trim()) {
       Alert.alert('Atenção', 'Nome e raça são obrigatórios.');
       return;
@@ -105,32 +110,25 @@ export default function CadastrarPetScreen({ navigation }) {
     }
 
     setLoading(true);
+
     try {
       const formData = new FormData();
 
-      // Campos do formulário
       Object.entries(form).forEach(([key, value]) => {
         formData.append(key, String(value));
       });
 
-      // Fotos - append com campo 'fotos' (array)
-      fotos.forEach((photo, index) => {
-        // Extraindo extensão e definindo mimeType correto
-        const uriParts = photo.uri.split('.');
-        const extension = uriParts[uriParts.length - 1].toLowerCase();
-        const mimeType = extension === 'png' ? 'image/png' : 'image/jpeg';
-
+      for (let i = 0; i < fotos.length; i++) {
+        const photo = fotos[i];
         formData.append('fotos', {
           uri: photo.uri,
-          name: photo.name || `photo_${Date.now()}_${index}.${extension}`,
-          type: mimeType
+          name: photo.name,
+          type: photo.type
         });
-      });
+      }
 
-      // Buscar token do usuário para autenticação Bearer
       const token = await auth.currentUser.getIdToken(true);
 
-      // Requisição POST para cadastro do animal com headers multipart e token
       const response = await api.post('/animais', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -153,6 +151,33 @@ export default function CadastrarPetScreen({ navigation }) {
     }
   };
 
+  const SelectionGroup = ({ label, options, valueKey }) => (
+    <View style={{ marginVertical: 8 }}>
+      <Text style={styles.sectionTitle}>{label}</Text>
+      <View style={styles.optionsRow}>
+        {options.map(opt => (
+          <TouchableOpacity
+            key={opt}
+            style={[
+              styles.optionButton,
+              form[valueKey] === opt && styles.optionButtonSelected
+            ]}
+            onPress={() => setForm(prev => ({ ...prev, [valueKey]: opt }))}
+          >
+            <Text
+              style={[
+                styles.optionText,
+                form[valueKey] === opt && styles.optionTextSelected
+              ]}
+            >
+              {opt}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
+  );
+
   return (
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       <Text style={styles.sectionTitle}>Informações do Pet</Text>
@@ -163,6 +188,8 @@ export default function CadastrarPetScreen({ navigation }) {
         value={form.nome}
         onChangeText={text => setForm({ ...form, nome: text })}
       />
+
+      <SelectionGroup label="Tipo" options={tipos} valueKey="tipo" />
 
       <TextInput
         style={styles.input}
@@ -177,6 +204,10 @@ export default function CadastrarPetScreen({ navigation }) {
         value={form.cor}
         onChangeText={text => setForm({ ...form, cor: text })}
       />
+
+      <SelectionGroup label="Porte" options={portes} valueKey="porte" />
+      <SelectionGroup label="Sexo" options={sexos} valueKey="sexo" />
+      <SelectionGroup label="Status" options={statuses} valueKey="status" />
 
       <TextInput
         style={[styles.input, { height: 100 }]}
@@ -203,7 +234,6 @@ export default function CadastrarPetScreen({ navigation }) {
             onPress={e => {
               setForm({ ...form, latitude: e.nativeEvent.coordinate.latitude, longitude: e.nativeEvent.coordinate.longitude });
             }}
-            onMapReady={() => {}}
           >
             <Marker
               coordinate={{ latitude: form.latitude, longitude: form.longitude }}
@@ -292,5 +322,30 @@ const styles = StyleSheet.create({
   submitButtonDisabled: {
     backgroundColor: '#a5d6a7'
   },
-  submitButtonText: { color: 'white', fontWeight: 'bold', fontSize: 16 }
+  submitButtonText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
+  optionsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 10,
+  },
+  optionButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  optionButtonSelected: {
+    backgroundColor: '#3498DB',
+    borderColor: '#3498DB'
+  },
+  optionText: {
+    fontSize: 14,
+    color: '#333'
+  },
+  optionTextSelected: {
+    color: '#fff'
+  },
 });

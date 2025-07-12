@@ -1,32 +1,28 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, Text, StyleSheet, Alert } from 'react-native';
+import { View, TextInput, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../services/firebaseConfig';
 import * as Clipboard from 'expo-clipboard';
 
 export default function LoginScreen({ navigation }) {
-  const [email, setEmail] = useState('teste@fake.com'); // Email pré-preenchido para testes
-  const [senha, setSenha] = useState('123456'); // Senha pré-preenchida para testes
+  const [email, setEmail] = useState('shirley@gmail.com');
+  const [senha, setSenha] = useState('123456');
   const [erro, setErro] = useState('');
 
   const handleLogin = async () => {
     try {
-      // 1. Faz login no Firebase
       const userCredential = await signInWithEmailAndPassword(auth, email, senha);
-      
-      // 2. Obtém o token JWT
       const token = await userCredential.user.getIdToken();
-      
-      // 3. Exibe o token em um alerta (para copiar no Postman)
+
       Alert.alert(
-        'Token para Postman',
+        'Token JWT',
         token,
         [
           {
             text: 'Copiar',
             onPress: async () => {
               await Clipboard.setStringAsync(token);
-              Alert.alert('Token copiado!');
+              Alert.alert('Copiado para a área de transferência');
             }
           },
           {
@@ -37,9 +33,7 @@ export default function LoginScreen({ navigation }) {
         { cancelable: false }
       );
 
-      // 4. Log no console para debug
       console.log('TOKEN:', token);
-
     } catch (error) {
       setErro('E-mail ou senha inválidos');
       console.error('Erro no login:', error);
@@ -48,69 +42,89 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.titulo}>Login</Text>
-      
-      <TextInput 
-        placeholder="Email" 
-        value={email} 
-        onChangeText={setEmail} 
-        style={styles.input} 
+      <Text style={styles.titulo}>Bem-vindo ao AchaMeuPet</Text>
+
+      <TextInput
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
+        style={styles.input}
         autoCapitalize="none"
+        keyboardType="email-address"
       />
-      
-      <TextInput 
-        placeholder="Senha" 
-        secureTextEntry 
-        value={senha} 
-        onChangeText={setSenha} 
-        style={styles.input} 
+
+      <TextInput
+        placeholder="Senha"
+        secureTextEntry
+        value={senha}
+        onChangeText={setSenha}
+        style={styles.input}
       />
-      
-      <Button title="Entrar" onPress={handleLogin} />
-      
-      {/* Botão extra apenas para testes */}
-      <Button 
-        title="Gerar Token para Postman" 
-        onPress={handleLogin} 
-        color="#888" 
-      />
-      
-      <Text style={styles.link} onPress={() => navigation.navigate('Cadastro')}>
-        Criar conta
-      </Text>
-      
+
       {erro !== '' && <Text style={styles.erro}>{erro}</Text>}
+
+      <TouchableOpacity style={styles.botao} onPress={handleLogin}>
+        <Text style={styles.botaoTexto}>Entrar</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={[styles.botao, styles.botaoCinza]} onPress={handleLogin}>
+        <Text style={styles.botaoTexto}>Gerar Token para Postman</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => navigation.navigate('Cadastro')}>
+        <Text style={styles.link}>Criar conta</Text>
+      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { 
+  container: {
     flex: 1,
+    padding: 25,
     justifyContent: 'center',
-    padding: 20 
+    backgroundColor: '#F9FAFB',
   },
-  titulo: { 
-    fontSize: 24, 
-    fontWeight: 'bold', 
-    marginBottom: 20,
-    textAlign: 'center' 
+  titulo: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: '#2C3E50',
+    textAlign: 'center',
+    marginBottom: 30,
   },
-  input: { 
-    borderWidth: 1, 
-    padding: 15,
-    marginVertical: 10, 
-    borderRadius: 8,
-    borderColor: '#ccc'
+  input: {
+    borderWidth: 1,
+    borderColor: '#D6D6D6',
+    padding: 14,
+    marginBottom: 15,
+    borderRadius: 10,
+    backgroundColor: '#FFF',
   },
-  link: { 
-    marginTop: 15, 
-    color: 'blue', 
-    textAlign: 'center' 
+  botao: {
+    backgroundColor: '#3498DB',
+    paddingVertical: 14,
+    borderRadius: 10,
+    marginVertical: 10,
   },
-  erro: { 
-    color: 'red', 
-    marginTop: 10,
-    textAlign: 'center' 
-  }
+  botaoCinza: {
+    backgroundColor: '#7F8C8D',
+  },
+  botaoTexto: {
+    color: '#FFF',
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  erro: {
+    color: 'red',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  link: {
+    marginTop: 20,
+    color: '#2980B9',
+    textAlign: 'center',
+    fontSize: 15,
+    fontWeight: 'bold',
+  },
 });

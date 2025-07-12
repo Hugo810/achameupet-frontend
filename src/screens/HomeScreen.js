@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; // Certifique-se de ter instalado expo-vector-icons
+import { Ionicons } from '@expo/vector-icons';
 
 export default function HomeScreen({ navigation }) {
   return (
@@ -16,7 +16,7 @@ export default function HomeScreen({ navigation }) {
           style={[styles.seloButton, styles.buscarButton]}
           onPress={() => navigation.navigate('BuscarPet')}
         >
-          <Ionicons name="search" size={32} color="#FFF" />
+          <Ionicons name="search" size={28} color="#FFF" />
           <Text style={styles.buttonText}>Buscar Pet</Text>
           <Text style={styles.buttonSubtext}>Encontre pets perdidos</Text>
         </TouchableOpacity>
@@ -26,9 +26,19 @@ export default function HomeScreen({ navigation }) {
           style={[styles.seloButton, styles.cadastrarButton]}
           onPress={() => navigation.navigate('CadastrarPet')}
         >
-          <Ionicons name="paw" size={32} color="#FFF" />
+          <Ionicons name="paw" size={28} color="#FFF" />
           <Text style={styles.buttonText}>Cadastrar Pet</Text>
           <Text style={styles.buttonSubtext}>Registre um pet perdido</Text>
+        </TouchableOpacity>
+
+        {/* Botão Meus Animais */}
+        <TouchableOpacity 
+          style={[styles.seloButton, styles.meusAnimaisButton]}
+          onPress={() => navigation.navigate('MeusAnimais')}
+        >
+          <Ionicons name="albums" size={28} color="#FFF" />
+          <Text style={styles.buttonText}>Meus Animais</Text>
+          <Text style={styles.buttonSubtext}>Veja seus pets cadastrados</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -43,7 +53,7 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    marginVertical: 40,
+    marginVertical: 30,
   },
   title: {
     fontSize: 32,
@@ -56,40 +66,44 @@ const styles = StyleSheet.create({
     color: '#7F8C8D',
   },
   buttonsContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
   },
   seloButton: {
-    width: 280,
-    height: 180,
-    borderRadius: 25,
-    padding: 20,
-    marginVertical: 15,
+    width: '48%',
+    height: 140,
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 16,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
   },
   buscarButton: {
-    backgroundColor: '#3498DB', // Azul
+    backgroundColor: '#3498DB',
   },
   cadastrarButton: {
-    backgroundColor: '#2ECC71', // Verde
+    backgroundColor: '#2ECC71',
+  },
+  meusAnimaisButton: {
+    backgroundColor: '#E67E22',
   },
   buttonText: {
     color: '#FFF',
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: 'bold',
-    marginTop: 15,
-    marginBottom: 5,
+    marginTop: 10,
+    marginBottom: 4,
+    textAlign: 'center',
   },
   buttonSubtext: {
-    color: 'rgba(255,255,255,0.8)',
-    fontSize: 14,
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: 13,
     textAlign: 'center',
   },
 });
